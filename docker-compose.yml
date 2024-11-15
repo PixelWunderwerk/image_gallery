@@ -2,62 +2,38 @@ version: '3.8'
 
 services:
   frontend:
-    image: image-gallery-frontend:latest
     build: 
-      context: frontend
+      context: ./frontend
       dockerfile: Dockerfile.prod
     ports:
       - "9080:80"
-    networks:
-      - image-gallery-network
     depends_on:
       - backend
-    environment:
-      - NODE_ENV=production
-      - VITE_API_URL=http://backend:4000
-    restart: unless-stopped
 
   backend:
-    image: image-gallery-backend:latest
     build:
-      context: backend
+      context: ./backend
       dockerfile: Dockerfile.prod
-    expose:
-      - "4000"
-    networks:
-      - image-gallery-network
+    ports:
+      - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://user:${DB_PASSWORD}@db:5432/imagegallery
+      - DATABASE_URL=postgresql://user:password@db:5432/imagegallery
       - NODE_ENV=production
       - MAX_FILE_SIZE=10485760
       - UPLOAD_PATH=/app/uploads
     volumes:
-      - image_uploads:/app/uploads
+      - ./uploads:/app/uploads
     depends_on:
       - db
-    restart: unless-stopped
 
   db:
     image: postgres:14-alpine
-    expose:
-      - "5432"
-    networks:
-      - image-gallery-network
     environment:
       - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=imagegallery
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-    restart: unless-stopped
-
-networks:
-  image-gallery-network:
-    driver: bridge
 
 volumes:
   postgres_data:
-    driver: local
-  image_uploads:
-    driver: local
