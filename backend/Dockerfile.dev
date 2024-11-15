@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+# Grundlegende Pakete installieren
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    jpeg-dev \
+    cairo-dev \
+    giflib-dev \
+    pango-dev \
+    libtool \
+    autoconf \
+    automake
+
+WORKDIR /app
+
+# Dependencies installieren
+COPY package*.json ./
+RUN npm install
+
+# Uploads Verzeichnis erstellen
+RUN mkdir -p uploads && chown -R node:node uploads
+
+# Development Port
+EXPOSE 4000
+
+# Anwendung im Development Mode starten
+CMD ["npm", "run", "dev"]

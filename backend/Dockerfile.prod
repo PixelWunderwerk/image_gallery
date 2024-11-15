@@ -1,0 +1,39 @@
+FROM node:18-alpine
+
+# Grundlegende Pakete installieren
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    jpeg-dev \
+    cairo-dev \
+    giflib-dev \
+    pango-dev \
+    libtool \
+    autoconf \
+    automake
+
+WORKDIR /app
+
+# Dependencies installieren
+COPY package*.json ./
+RUN npm install --production
+
+# TypeScript und Build-Dependencies für Kompilierung
+RUN npm install -D typescript @types/node
+
+# Source kopieren und kompilieren
+COPY . .
+RUN npm run build
+
+# Uploads Verzeichnis erstellen
+RUN mkdir -p uploads && chown -R node:node uploads
+
+# Nicht-Root User verwenden
+USER node
+
+# Production Port
+EXPOSE 4000
+
+# Anwendung starten
+CMD ["node", "dist/index.js"]
